@@ -1,8 +1,11 @@
 package wis.Met;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class METER {
 
 	private String airportName;
+	@JsonProperty("airtermin_id")
 	private String shortName;
 	private String lat;
 	private String lon;
