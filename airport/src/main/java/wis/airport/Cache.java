@@ -10,7 +10,6 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -92,13 +91,22 @@ public class Cache {
 	  * @param fileName
 	  */
 	 
-	 public void saveJsonToDocument (String json,String fileName) {
-		 File f = new File(getPropertis()+File.separator+fileName+File.separator+util.getLastMonday(-7)+".txt");
+	 public void saveJsonToDocument (String json,String fileName,String filePath) {
+		 File f = new File(getPropertis()+File.separator+fileName);
 		 if(!f.exists()) {
 			 f.mkdirs();
 		 }
+		 File ff =  new File(getPropertis()+File.separator+fileName+File.separator+filePath+".txt");
+		 if(!f.exists()) {
+			 try {
+				ff.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		 }
 		 try {
-			FileUtils.writeStringToFile(new File(fileName), json, true);
+			FileUtils.writeStringToFile(ff, json, true);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -119,21 +127,7 @@ public class Cache {
 		long l = util.dateFormat(util.getLastMonday(-7));
 		Set<Map.Entry<String, Map<String,Airport>>> set = AirportMapper.map.entrySet();
 		Iterator<Map.Entry<String, Map<String,Airport>>> it = set.iterator();
-		while(it.hasNext()) {
-			Entry<String, Map<String, Airport>>  m = it.next(); 
-			 Map<String,Airport>  m1  =   m.getValue();
-			 if(m1!=null) {
-				  Set<String> set1 =  m1.keySet();
-				  Iterator<String> itertor = set1.iterator();
-				  while(itertor.hasNext()) {
-					  String str = itertor.next();
-					 if(util.dateFormat(str)<l) {
-						 itertor.remove();
-					 }
-				  }
-			 }
-			
-		}
+	
 		
 	}
 	 /**
@@ -143,15 +137,19 @@ public class Cache {
 	 public void readDocument() throws Exception {
 		System.out.println("读取缓存文件");
 		 String json =null;
-			File f = new File(getPropertis()+File.separator+File.separator+"airport"+util.getLastMonday(-7)+".txt");
+			File f = new File(getPropertis()+File.separator+File.separator+"airport"+File.separator+util.getLastMonday(-7)+".txt");
 			if(f.exists()) {
 				
-			  json  = FileUtils.readFileToString(f);	
-			   airportMapper.parseJson(json,true);
-			   File f1 = new File(getPropertis()+File.separator+File.separator+"airport"+util.getLastMonday(0)+".txt");
+			  json  = FileUtils.readFileToString(f).substring(1);	
+			  log.info("获取上周数据---------------------------------------------------------------------");
+			  airportMapper.parseJson("["+json+"]",true,null);
+			  getCount();
+			   File f1 = new File(getPropertis()+File.separator+File.separator+"airport"+File.separator+util.getLastMonday(0)+".txt");
 			   if(f1.exists()) {
-				   json = FileUtils.readFileToString(f1);
-				   airportMapper.parseJson(json,true);
+				   log.info("获取本周数据----------------------------------------");
+				   getCount();
+				   json = FileUtils.readFileToString(f1).substring(1);
+			   airportMapper.parseJson("["+json+"]",true,null);
 			   }
 			}else {
 				Calendar cal = Calendar.getInstance();
@@ -163,21 +161,25 @@ public class Cache {
 				 String four = sf1.format(cal.getTime())+"000000"; //上周四
 			    
 				 log.info("获取上周一至上周四数据，初次加载，耐心等待...");
-				 get141NowData(util.getLastMonday(-7)+"000000", four);
+				 get141NowData(util.getLastMonday(-7)+"000000", four,util.getLastMonday(-7));
+				 getCount();
 				 log.info("获取上周四至本周一数据...");
-				 get141NowData(four, one);
-			     
+				 get141NowData(four, one,util.getLastMonday(-7));
+				 getCount();
 				 cal.add(Calendar.DAY_OF_WEEK, 0);
 			     cal .set(Calendar.DAY_OF_WEEK,Calendar.THURSDAY);
 			     String fourNow = sf1.format(cal.getTime())+"000000";
 			     if(cal.getTime().getTime()<new Date().getTime()) {
 			    	 log.info("获取本周一至周四数据..");
-			    	 get141NowData(one, fourNow);
+			    	 get141NowData(one, fourNow,util.getLastMonday(0));
+			    	 getCount();
 			    	 log.info("获取本周四至现在的数据..");
-			    	 get141NowData(fourNow, sf.format(new Date()));
+			    	 get141NowData(fourNow, sf.format(new Date()),util.getLastMonday(0));
+			    	 getCount();
 			     }else {
 			    	 log.info("获取本周一至现在的数据..");
-			    	 get141NowData(one, sf.format(new Date()));
+			    	 get141NowData(one, sf.format(new Date()),util.getLastMonday(0));
+			    	 getCount();
 			     }
 			   
 			}
@@ -190,49 +192,29 @@ public class Cache {
 	  * @param to
 	 * @throws Exception 
 	  */
-	 public void get141NowData(String from ,String to) throws Exception {
+	 public void get141NowData(String from ,String to,String filePath) throws Exception {
 		 
 		  String json = util.getTms(from, to);
 		  int i = json.lastIndexOf("[");
 	      int j = json.indexOf("[");
 	      if(i!=j) {
 	    	  json = json.substring(i).toLowerCase();
-		      airportMapper.parseJson(json,true);
+		      airportMapper.parseJson(json,false,filePath);
 	      }else {
 	    	  log.info("从"+from+"至"+to+"，接口中无数据！");
 	      }
 	      
 		 
 	 }
-	 /**
-	  * 原缓存map和新增数据合并成一个map
-	  * @param m
-	  * @return
-	  */
-	  public Map<String, Map<String,Airport>> addNewData(Map<String, Map<String,Airport>> m) {
-		  
-			Set<Entry<String, Map<String, Airport>>> entry= AirportMapper.map.entrySet();
-		      Iterator<Entry<String, Map<String, Airport>>> it = entry.iterator();
-		      while(it.hasNext()) {
-		    	   Entry<String, Map<String, Airport>>  e= it.next();
-		    	   Map<String, Airport> temp = e.getValue();
-		    	   Set<Entry<String, Airport>> tempEntry =  temp.entrySet(); 
-		    	   Iterator<Entry<String, Airport>> tempIt = tempEntry.iterator();
-		    	   while(tempIt.hasNext()) {
-		    		   Entry<String, Airport> t = tempIt.next();
-		    		   if(m.containsKey(e.getKey())) {
-		    			  m.get(e.getValue()).put(t.getKey(), t.getValue()); 
-		    		   }else {
-		    			   Map<String, Airport> mm = new HashMap<String, Airport>();
-		    			   mm.put(t.getKey(), t.getValue());
-		    			   m.put(e.getKey(), mm);
-		    			   
-		    		   }
-		    		   
-		    	   }
-		      }
-		     return m; 
-	  }
+	 
+	public void getCount() {
+		Set<String> set =  AirportMapper.identifyMap.keySet();
+	     Iterator<String> it =set.iterator();
+	     while(it.hasNext()) {
+	    	 String i = it.next();
+	    	 log.info(AirportMapper.identifyMap.get(i)+"-----"+ AirportMapper.map.get(i).size());	    	
+	     }
+	}
 	 
 	 
 	 

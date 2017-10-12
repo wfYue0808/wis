@@ -24,7 +24,7 @@ public class util {
     	String res=null;  
     	  try {  
               //创建一个url实例  
-    	      String url1="http://10.20.76.31:8008/cimiss-web/api?userId=NMC_YBS_yangmeiling&pwd=123456&interfaceId=getSurfEleByTimeRange&dataCode=SURF_WEA_WAFS_META&elements=Year,Mon,Day,Hour,Min,Lat,Lon,TEM,DPT&timeRange=["+from+","+to+"]&dataFormat=json";
+    	      String url1="http://10.20.76.31:8008/cimiss-web/api?userId=NMC_YBS_yangmeiling&pwd=123456&interfaceId=getSurfEleByTimeRange&dataCode=SURF_WEA_WAFS_META&elements=Year,Mon,Day,Hour,Min,Lat,Lon,TEM,DPT,AirTermin_ID&timeRange=["+from+","+to+"]&dataFormat=json";
              // URL url=new URL("http://10.20.76.31:8008/cimiss-web/api?userId=NMC_YBS_yangmeiling&pwd=123456&interfaceId=getSurfEleByTime&dataCode=SURF_WEA_WAFS_META&elements=Lon,TEM,DPT&times="+time+"000000&dataFormat=json");  
               //通过url的openStream获取url对象所表示资源的字节输入流  
     	      URL url = new URL(url1);

@@ -31,20 +31,23 @@ public class AirportMapper {
 	//存储近一周数据的map
 	public static Map<String, Map<String,Airport>> map = new HashMap<String, Map<String,Airport>>();
 	//识别机场map
-	public static Map<String, String[]> identifyMap = new HashMap<String, String[]>();
+	public static Map<String, String> identifyMap = new HashMap<String, String>();
 	
 	 
 	public static void init() {
 		List<String> airportList = null;
 		try {
-			airportList = FileUtils.readLines(new File("qq.txt"));
+			airportList = FileUtils.readLines(new File("airport.txt"));
 		} catch (IOException e) {
 			
 			e.printStackTrace();
 		}
 		     for (String str: airportList) {
 			  String[] airport  = str.split("\t");
-			  identifyMap.put(airport[2].trim()+""+airport[3].trim(), new String[] {airport[0].trim(),airport[1].trim()} );		
+			  if(airport[0].length()==5) {
+				 airport[0]=airport[0].substring(1); 
+			  }
+			  identifyMap.put(airport[0],airport[1]);		
 			  map.put(airport[0].trim(), null);
 		}
 		   
@@ -64,7 +67,7 @@ public class AirportMapper {
         	System.out.println("过去一小时内无数据更新");
         }else {
         	json = json.substring(i).toLowerCase();
-        	map1=parseJson(json,false);
+        	map1=parseJson(json,false,util.getLastMonday(0));
         }
     	return map1;
     }
@@ -75,7 +78,7 @@ public class AirportMapper {
      * @param  flag true解析完毕的数据不写文件，false写文件
      * @throws Exception
      */
-    public  Map<String, Map<String,Airport>> parseJson(String json,Boolean flag) throws Exception, Exception, Exception {
+    public  Map<String, Map<String,Airport>> parseJson(String json,Boolean flag,String writeDes) throws Exception, Exception, Exception {
     	
     	ObjectMapper mapper = new ObjectMapper();
       
@@ -84,7 +87,8 @@ public class AirportMapper {
         System.out.println(list.size()+"-----json中的airpor个数 ------------------------");
         for (Airport airport : list) {
         	
-			if(identifyMap.containsKey(airport.getLat()+""+airport.getLon())) {
+			if(identifyMap.containsKey(airport.getShortname().toUpperCase() )) {
+				
 				String mon = airport.getMon()+"";
 				if(airport.getMon()<10) {
 					mon = "0"+mon;
@@ -102,21 +106,22 @@ public class AirportMapper {
 					min ="0"+min;
 				}
 				String time = airport.getYear()+""+mon+""+day+""+hour+""+min+"00";
-			    String[] name = identifyMap.get(airport.getLat()+""+airport.getLon());
-			    airport.setAirportName(name[1]);
-			    airport.setShortname(name[0]);
-			    Map<String, Airport> temp = new HashMap<String, Airport>();
-			    temp.put(time, airport);
+			    String name = identifyMap.get(airport.getShortname().toUpperCase());
+			    airport.setAirportName(name);
 			   
-			    
+			   
+			    if(map.get(airport.getShortname().toUpperCase())!=null) {
+			    	map.get(airport.getShortname().toUpperCase()).put(time, airport);
+			    }else {
+			    	 Map<String, Airport> temp = new HashMap<String, Airport>();
+					    temp.put(time, airport);
+					    map.put(airport.getShortname().toUpperCase(), temp);
+			    }
 			    //写入文件
 			    if(!flag) {
-			    	System.out.println("写入文件"+airport);
+			    	//System.out.println("写入文件"+airport);
 			    	String str = mapper.writeValueAsString(airport);
-				    new Cache().saveJsonToDocument(str, "airport");
-				    map1.put(name[0].trim(), temp);
-			    }else {
-			    	 map.put(name[0].trim(), temp);
+				    new Cache().saveJsonToDocument(","+str, "airport",writeDes);
 			    }
 			    
 			}

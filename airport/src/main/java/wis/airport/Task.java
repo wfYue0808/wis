@@ -1,6 +1,5 @@
 package wis.airport;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,8 +29,7 @@ public class Task {
 			System.out.println("dingshi-------------------------");
 			
 			Map<String, Map<String,Airport>> temp = airportMapper.dataSouce();
-		   airportMapper.map = new Cache().addNewData(temp);
-		   temp =new HashMap<String, Map<String,Airport>>();
+		
 		   } catch (Exception e) {
 
 			e.printStackTrace();

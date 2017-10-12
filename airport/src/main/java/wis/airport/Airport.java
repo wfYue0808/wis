@@ -2,7 +2,7 @@ package wis.airport;
 
 import java.io.Serializable;
 
-import org.springframework.data.annotation.Id;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Airport implements Serializable{
 
@@ -10,9 +10,9 @@ public class Airport implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = -3387372930708691695L;
-	@Id
-	private long id;
+	
 	private String airportName;
+	@JsonProperty("airtermin_id")
 	private String shortname;
 	private int year;
 	private int mon;
@@ -23,13 +23,6 @@ public class Airport implements Serializable{
 	private String lon;
 	private double tem;
 	private double dpt;
-	
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
 	public String getAirportName() {
 		return airportName;
 	}
