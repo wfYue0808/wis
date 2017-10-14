@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>wis</groupId>
-  <artifactId>ftp</artifactId>
+  <artifactId>Turbulence_cloud_radar_product</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>ftp</name>
+  <name>Turbulence_cloud_radar_product</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -15,6 +15,16 @@
   </properties>
 
   <dependencies>
+	  <!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
+	<!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
+	<dependency>
+	    <groupId>commons-net</groupId>
+	    <artifactId>commons-net</artifactId>
+	    <version>2.2</version>
+	</dependency>
+   
+    
+  
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
